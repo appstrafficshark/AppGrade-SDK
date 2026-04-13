@@ -18,4 +18,9 @@ public class AppGrade {
         core?.start()
     }
     
+    // TODO: - ???
+    public func onConversionDataSuccess(_ data: [AnyHashable: Any]) {
+        let ctit = data["af_click_lookback"] // или ctit_sec
+    }
+    
 }

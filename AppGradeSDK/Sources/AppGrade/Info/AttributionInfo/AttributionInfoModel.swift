@@ -4,11 +4,11 @@ import Foundation
 // MARK: - AttributionInfo
 struct AttributionInfo: Codable {
     let installSource: String?
-    let ctitSec: Double?
+    let ctitSec: Double? // ⚠️
     let idfa: String?
-    let gaid: String? // всегда nil на iOS
+    let gaid: String? // always nil on iOS
     let idfv: String?
-    let skanConversionValue: Int?
+    let skanConversionValue: Int? // ⚠️
     let isOrganic: Bool
     
     enum CodingKeys: String, CodingKey {
@@ -21,3 +21,19 @@ struct AttributionInfo: Codable {
         case isOrganic = "is_organic"
     }
 }
+
+// MARK: - InstallSourceType
+enum InstallSourceType {
+    case organic
+    case campaignId(String)
+    
+    var installSource: String {
+        switch self {
+        case .organic:
+            return "organic"
+        case .campaignId(let id):
+            return id
+        }
+    }
+}
+

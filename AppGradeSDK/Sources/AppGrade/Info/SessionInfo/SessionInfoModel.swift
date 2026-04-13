@@ -44,5 +44,5 @@ struct SessionInfoModel: Codable {
 //        case avgSessionDurationTrend = "avg_session_duration_trend"
 //        case engagementScore = "engagement_score"
     }
-    
+    // TODO: - ???
 }

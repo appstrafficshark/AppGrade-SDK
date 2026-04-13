@@ -3,89 +3,100 @@ import UIKit
 import AdSupport
 import AppTrackingTransparency
 import StoreKit
+import AdServices
 
-final class AttributionInfoService {
-    
-    static let shared = AttributionInfoService()
-    
-    private let defaults = UserDefaults.standard
-    
-    private let installTimeKey = "attr_install_time"
-    private let firstOpenKey = "attr_first_open_time"
-    
-    private init() {
-        setupInstallTime()
-    }
+// MARK: - AttributionInfoServiceProtocol
+protocol AttributionInfoServiceProtocol {
+    func collect() async -> AttributionInfo
 }
 
-private extension AttributionInfoService {
+// MARK: - AttributionInfoService
+final class AttributionInfoService: AttributionInfoServiceProtocol {
     
-    func setupInstallTime() {
-        let now = Date().timeIntervalSince1970
-        
-        if defaults.object(forKey: installTimeKey) == nil {
-            defaults.set(now, forKey: installTimeKey)
-        }
-        
-        if defaults.object(forKey: firstOpenKey) == nil {
-            defaults.set(now, forKey: firstOpenKey)
-        }
-    }
-}
-
-extension AttributionInfoService {
-    
-    func getAttribution() -> AttributionInfo {
+    func collect() async -> AttributionInfo {
+        let installSource = await getInstallSource()
         return AttributionInfo(
-            installSource: getInstallSource(),
+            installSource: installSource,
             ctitSec: getCTIT(),
             idfa: getIDFA(),
             gaid: nil,
             idfv: UIDevice.current.identifierForVendor?.uuidString,
             skanConversionValue: getSKAN(),
-            isOrganic: isOrganic()
+            isOrganic: installSource == InstallSourceType.organic.installSource
         )
     }
+    
 }
 
-extension AttributionInfoService {
-    
-    private func getInstallSource() -> String? {
-        // iOS напрямую НЕ даёт источник установки
-        // варианты:
-        // - AppsFlyer / Adjust / Firebase
-        // - или deep link
+// MARK: - Private Function
+private extension AttributionInfoService {
+           
+    func getInstallSource() async -> String {
+        let installSource: String = StorageService.load(key: .installSource, defaultValue: "")
+        guard installSource == "" else { return installSource }
         
-        return "unknown"
+        guard let requestUrl = URL(string: "https://api-adservices.apple.com/api/v1/"),
+              let token = try? AAAttribution.attributionToken()
+        else {
+            return InstallSourceType.organic.installSource
+        }
+        do {
+            var request = URLRequest(url: requestUrl)
+            request.httpMethod = "POST"
+            request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
+            request.httpBody = Data(token.utf8)
+            request.timeoutInterval = 10
+            
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                  httpResponse.statusCode == 200,
+                  let jsonResponse = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any]
+            else {
+                return InstallSourceType.organic.installSource
+            }
+            
+            let campaignId = jsonResponse["campaignId"] as? Int
+            
+            if let campaignId, campaignId != 1234567890 {
+                return InstallSourceType.campaignId("\(campaignId)").installSource
+            } else {
+                return InstallSourceType.organic.installSource
+            }
+        } catch {
+            return InstallSourceType.organic.installSource
+        }
+    }
+
+    // TODO: - ???
+    func getCTIT() -> Double? {
+//        let install = defaults.double(forKey: installTimeKey)
+//        let firstOpen = defaults.double(forKey: firstOpenKey)
+//        
+//        guard install > 0, firstOpen > 0 else { return nil }
+//        
+//        return firstOpen - install
+        return 0
     }
     
-    private func getCTIT() -> Double? {
-        let install = defaults.double(forKey: installTimeKey)
-        let firstOpen = defaults.double(forKey: firstOpenKey)
-        
-        guard install > 0, firstOpen > 0 else { return nil }
-        
-        return firstOpen - install
-    }
-    
-    private func getIDFA() -> String? {
+    func getIDFA() -> String {
         let status = ATTrackingManager.trackingAuthorizationStatus
-        
-        guard status == .authorized else { return nil }
-        
-        return ASIdentifierManager.shared().advertisingIdentifier.uuidString
+        switch status {
+        case .notDetermined, .restricted:
+            return "ATT_notDetermined"
+        case .denied:
+            return "ATT_denied"
+        case .authorized:
+            return ASIdentifierManager.shared().advertisingIdentifier.uuidString ?? "unknown"
+        }        
     }
     
-    private func getSKAN() -> Int? {
+    // TODO: - ???
+    func getSKAN() -> Int? {
         if #available(iOS 14.0, *) {
             return UserDefaults.standard.integer(forKey: "skan_cv")
         }
         return nil
-    }
-    
-    private func isOrganic() -> Bool {
-        let source = getInstallSource()
-        return source == nil || source == "unknown" || source == "organic"
     }
     
 }

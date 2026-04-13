@@ -10,13 +10,17 @@ protocol RequestServiceProtocol {
 final class RequestService {
     
     private let apiKey: String
+    private let sessionId: String
+    private let coreInfo: SDKStorageData
     
-    init(apiKey: String) {
+    init(apiKey: String, sessionId: String, coreInfo: SDKStorageData) {
         self.apiKey = apiKey
+        self.sessionId = sessionId
+        self.coreInfo = coreInfo
     }
   
 }
-
+// TODO: - ???
 // MARK: - RequestServiceProtocol
 extension RequestService: RequestServiceProtocol {
     

@@ -4,7 +4,11 @@ import Foundation
 final class AppGradeCore {
     
     private let config: SDKConfiguration
+    
     private let deviceService: DeviceInfoServiceProtocol
+    private let networkService: NetworkInfoServiceProtocol
+    private let sessionService: SessionInfoServiceProtocol
+    
     private let requestService: RequestServiceProtocol
     private let logService: LogServiceProtocol
     private let storageService: StorageServiceProtocol
@@ -19,6 +23,8 @@ final class AppGradeCore {
         self.logService = LogService(enableLogs: configuration.enableLogs)
        
         self.deviceService = DeviceInfoService()
+        self.networkService = NetworkInfoService()
+        self.sessionService = SessionInfoService()
     }
     
     func start() {
@@ -29,12 +35,21 @@ final class AppGradeCore {
     }
     
     private func collectAndSend() async {
+        // - Device Info
         let deviceInfo = await deviceService.collect()
+        logService.log("Device Info collected")
+        logService.log("Device Info: \(deviceInfo)")
+    
+        // - Network Info
+        let networkInfo = await networkService.collect()
+        logService.log("Network Info collected")
+        logService.log("Network Info: \(networkInfo)")
         
-        logService.log("Device info collected")
-        
-        logService.log("Device info: \(deviceInfo)")
-        
+        // - Session Info
+        let sessionInfo = await sessionService.collect(data: storageService.coreInfo)
+        logService.log("Network Info collected")
+        logService.log("Network Info: \(networkInfo)")
+
         do {
             try await requestService.send(deviceInfo)
             logService.log("Device info sent ✅")

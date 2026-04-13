@@ -43,11 +43,11 @@ struct MainDeviceInfo: Codable {
 // MARK: - DeviceInfo
 struct DeviceInfo: Codable {
     let osVersion: String
-    let ramAvailable: Int // ⛔️
+    let ramAvailable: Int
     let batteryState: String
     let thermalState: String
     let preferredLanguages: [String]
-    let localeRegion: String // ⚠️
+    let localeRegion: String
     let localeLanguage: String
     let timezoneId: String
     let isVoiceOverOn: Bool
@@ -56,7 +56,7 @@ struct DeviceInfo: Codable {
     let preferredContentSize: String
     let isLowPowerMode: Bool
     let uiStyle: String
-    let isJailbroken: Bool  // ⚠️
+    let isJailbroken: Bool 
     
     enum CodingKeys: String, CodingKey {
         case osVersion = "os_version"

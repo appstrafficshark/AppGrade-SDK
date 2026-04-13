@@ -3,7 +3,7 @@ import Foundation
 
 // MARK: - RequestServiceProtocol
 protocol RequestServiceProtocol {
-    func send(_ device: DeviceInfo) async throws
+    func send(_ device: SendingDeviceInfoModel) async throws
 }
 
 // MARK: - RequestService
@@ -20,7 +20,7 @@ final class RequestService {
 // MARK: - RequestServiceProtocol
 extension RequestService: RequestServiceProtocol {
     
-    func send(_ device: DeviceInfo) async throws {
+    func send(_ device: SendingDeviceInfoModel) async throws {
         
         let endpoint = "https://your-api.com/device/testst"
         

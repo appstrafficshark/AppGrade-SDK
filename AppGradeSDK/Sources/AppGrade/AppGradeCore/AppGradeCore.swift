@@ -8,12 +8,16 @@ final class AppGradeCore {
     private let requestService: RequestServiceProtocol
     private let logService: LogServiceProtocol
     private let storageService: StorageServiceProtocol
+    private let sessionId: String
     
     init(configuration: SDKConfiguration) {
+       
         self.config = configuration
+        self.storageService = StorageService()
+        self.sessionId = UUID().uuidString + "_\(storageService.coreInfo.userId)"
         self.requestService = RequestService(apiKey: configuration.apiKey)
         self.logService = LogService(enableLogs: configuration.enableLogs)
-        self.storageService = StorageService()
+       
         self.deviceService = DeviceInfoService()
     }
     
@@ -25,7 +29,7 @@ final class AppGradeCore {
     }
     
     private func collectAndSend() async {
-        let deviceInfo = deviceService.collect()
+        let deviceInfo = await deviceService.collect()
         
         logService.log("Device info collected")
         

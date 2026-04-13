@@ -65,12 +65,14 @@ private extension StorageService {
         }
     }
     
-    private func loadFromDefaults() -> SDKStorageData? {
-        guard let saved = defaults.data(forKey: storageKey),
-              let decoded = try? JSONDecoder().decode(SDKStorageData.self, from: saved) else {
-            return nil
-        }
-        return decoded
+}
+
+func loadFromDefaults() -> SDKStorageData? {
+    let defaults = UserDefaults.standard
+    let storageKey = "sdk_storage_data"
+    guard let saved = defaults.data(forKey: storageKey),
+          let decoded = try? JSONDecoder().decode(SDKStorageData.self, from: saved) else {
+        return nil
     }
-    
+    return decoded
 }

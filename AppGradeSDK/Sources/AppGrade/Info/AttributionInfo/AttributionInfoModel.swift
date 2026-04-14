@@ -4,7 +4,7 @@ import Foundation
 // MARK: - AttributionInfo
 struct AttributionInfo: Codable {
     let installSource: String?
-    let ctitSec: Double? // ⚠️
+//    let ctitSec: Double? // ⚠️
     let idfa: String?
     let gaid: String? // always nil on iOS
     let idfv: String?
@@ -13,7 +13,7 @@ struct AttributionInfo: Codable {
     
     enum CodingKeys: String, CodingKey {
         case installSource = "install_source"
-        case ctitSec = "ctit_sec"
+//        case ctitSec = "ctit_sec"
         case idfa
         case gaid
         case idfv

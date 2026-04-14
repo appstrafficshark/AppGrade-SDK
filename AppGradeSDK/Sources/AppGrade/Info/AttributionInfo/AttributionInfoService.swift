@@ -17,7 +17,6 @@ final class AttributionInfoService: AttributionInfoServiceProtocol {
         let installSource = await getInstallSource()
         return AttributionInfo(
             installSource: installSource,
-            ctitSec: getCTIT(),
             idfa: getIDFA(),
             gaid: nil,
             idfv: UIDevice.current.identifierForVendor?.uuidString,
@@ -67,17 +66,6 @@ private extension AttributionInfoService {
             return InstallSourceType.organic.installSource
         }
     }
-
-    // TODO: - ???
-    func getCTIT() -> Double? {
-//        let install = defaults.double(forKey: installTimeKey)
-//        let firstOpen = defaults.double(forKey: firstOpenKey)
-//        
-//        guard install > 0, firstOpen > 0 else { return nil }
-//        
-//        return firstOpen - install
-        return 0
-    }
     
     func getIDFA() -> String {
         let status = ATTrackingManager.trackingAuthorizationStatus
@@ -93,9 +81,6 @@ private extension AttributionInfoService {
     
     // TODO: - ???
     func getSKAN() -> Int? {
-        if #available(iOS 14.0, *) {
-            return UserDefaults.standard.integer(forKey: "skan_cv")
-        }
         return nil
     }
     

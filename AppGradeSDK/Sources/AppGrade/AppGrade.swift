@@ -18,6 +18,10 @@ public class AppGrade {
         core?.start()
     }
     
+    public func updateAttributionInfo() {
+        core?.updateAttributionInfo()
+    }
+    
     // TODO: - ???
     public func onConversionDataSuccess(_ data: [AnyHashable: Any]) {
         let ctit = data["af_click_lookback"] // или ctit_sec

@@ -3,7 +3,7 @@ import Foundation
 
 // MARK: - RequestServiceProtocol
 protocol RequestServiceProtocol {
-    func send(_ device: SendingDeviceInfoModel) async throws
+    func track<T: Codable>(updateInfo: Bool, model: T) async throws
 }
 
 // MARK: - RequestService
@@ -13,34 +13,36 @@ final class RequestService {
     private let sessionId: String
     private let coreInfo: SDKStorageData
     
-    init(apiKey: String, sessionId: String, coreInfo: SDKStorageData) {
+    private let logService: LogServiceProtocol
+    private let queue: EventQueue
+    private let dispatcher: EventDispatcher
+    
+    init(apiKey: String, sessionId: String, coreInfo: SDKStorageData, logService: LogServiceProtocol) {
         self.apiKey = apiKey
         self.sessionId = sessionId
         self.coreInfo = coreInfo
+        
+        self.logService = logService
+        let storage = EventStorage()
+        self.queue = EventQueue(storage: storage)
+        self.dispatcher = EventDispatcher(queue: queue, network: NetworkService(), logService: self.logService)
+        self.dispatcher.start()
     }
   
 }
-// TODO: - ???
 // MARK: - RequestServiceProtocol
 extension RequestService: RequestServiceProtocol {
     
-    func send(_ device: SendingDeviceInfoModel) async throws {
-        
-        let endpoint = "https://your-api.com/device/testst"
-        
-        var request = URLRequest(url: URL(string: endpoint)!)
-        request.httpMethod = "POST"
-        request.setValue(apiKey, forHTTPHeaderField: "X-API-KEY")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        request.httpBody = try JSONEncoder().encode(device)
-        
-        let (_, response) = try await URLSession.shared.data(for: request)
-        
-        guard let http = response as? HTTPURLResponse,
-              200...299 ~= http.statusCode else {
-            throw URLError(.badServerResponse)
+    func track<T: Codable>(updateInfo: Bool = false, model: T) async throws {
+        do {
+            let data = try JSONEncoder().encode(model)
+            let event = EventModel(id: UUID(), apiKey: apiKey, coreInfo: coreInfo, sessionId: sessionId, payload: data, createdAt: Date(), updateInfo: updateInfo, retryCount: 0)
+            await queue.enqueue(event)
+            dispatcher.notifyNewEvent()
+            
+        } catch {
+            logService.log("⛔️ Encoding error: \(error.localizedDescription)")
         }
     }
-    
+        
 }

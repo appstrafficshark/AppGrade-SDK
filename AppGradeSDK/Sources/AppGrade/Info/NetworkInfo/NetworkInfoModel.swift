@@ -4,8 +4,8 @@ import Foundation
 // MARK: - NetworkInfoModel
 struct NetworkInfoModel: Codable {
     let connectionType: String
-    let cellularTechnology: String?
-    let carrierName: String?
+    let cellularTechnology: String
+    let carrierName: String
     let isVpnActive: Bool
     let isProxyConfigured: Bool
     let connectionChangesCount: Int // ⚠️

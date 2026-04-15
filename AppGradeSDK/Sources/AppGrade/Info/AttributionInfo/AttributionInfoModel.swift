@@ -3,12 +3,12 @@ import Foundation
 
 // MARK: - AttributionInfo
 struct AttributionInfo: Codable {
-    let installSource: String?
+    let installSource: String
 //    let ctitSec: Double? // ⚠️
-    let idfa: String?
+    let idfa: String
     let gaid: String? // always nil on iOS
-    let idfv: String?
-    let skanConversionValue: Int? // ⚠️
+    let idfv: String
+    let skanConversionValue: String // ⚠️
     let isOrganic: Bool
     
     enum CodingKeys: String, CodingKey {

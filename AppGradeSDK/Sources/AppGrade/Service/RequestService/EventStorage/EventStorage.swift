@@ -12,7 +12,14 @@ final class EventStorage {
     
     func load() -> [EventModel] {
         guard let data = try? Data(contentsOf: url) else { return [] }
-        return (try? JSONDecoder().decode([EventModel].self, from: data)) ?? []
+        var resultModel: [EventModel] = []
+        let model = (try? JSONDecoder().decode([EventModel].self, from: data)) ?? []
+        model.forEach { model in
+            var new = model
+            new.retryCount = 0
+            resultModel.append(new)
+        }
+        return resultModel
     }
     
     func save(_ events: [EventModel]) {

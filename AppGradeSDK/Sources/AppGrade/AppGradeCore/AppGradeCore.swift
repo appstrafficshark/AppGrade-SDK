@@ -9,7 +9,9 @@ final class AppGradeCore {
     private let networkService: NetworkInfoServiceProtocol
     private let sessionService: SessionInfoServiceProtocol
     private let attributionService: AttributionInfoServiceProtocol
+    private let appExitInfoService: AppExitInfoServiceProtocol
     
+    private let observer = AppStateObserver()
     private let requestService: RequestServiceProtocol
     private let logService: LogServiceProtocol
     private let storageService: StorageServiceProtocol
@@ -27,6 +29,11 @@ final class AppGradeCore {
         self.networkService = NetworkInfoService()
         self.sessionService = SessionInfoService()
         self.attributionService = AttributionInfoService()
+        self.appExitInfoService = AppExitInfoService()
+        
+        self.observer.onStateChanges = { [weak self] state in
+            self?.handleAppState(state)
+        }
     }
     
     func start() {
@@ -51,8 +58,13 @@ final class AppGradeCore {
             }
         }
     }
+        
+}
+
+// MARK: - Private Functions
+private extension AppGradeCore {
     
-    private func collectAndSend() async {
+    func collectAndSend() async {
         // - Device Info
         let deviceInfo = await deviceService.collect()
         logService.log("✅ Device Info collected: \(deviceInfo)")
@@ -76,6 +88,28 @@ final class AppGradeCore {
             try await requestService.track(updateInfo: false, model: attributionInfo)
         } catch {
             logService.log("Track failed ❌ \(error)")
+        }
+    }
+    
+    func handleAppState(_ event: AppStateType) {
+        switch event {
+        case .background:
+            logService.log("user left the app")
+            Task {
+                // - App Exit Info
+                let sessionDuration = self.sessionService.endSession()
+                let networkInfo = await networkService.collect()
+                let appExitInfo = await appExitInfoService.collect(sessionDuration: sessionDuration, networkInfo: networkInfo)
+                logService.log("✅ App Exit Info collected: \(appExitInfo)")
+                do {
+                    try await requestService.track(updateInfo: true, model: appExitInfo)
+                } catch {
+                    logService.log("Track failed ❌ \(error)")
+                }
+            }
+        case .active:
+            logService.log("user returned to the app")
+            self.sessionService.startSession()
         }
     }
     

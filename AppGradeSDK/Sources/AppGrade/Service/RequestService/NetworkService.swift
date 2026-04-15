@@ -9,6 +9,8 @@ final class NetworkService {
         request.httpMethod = "POST"
         request.httpBody = event.payload
         
+        print(">>>>>>>>>>>>> \n\(String(data: event.payload, encoding: String.Encoding.utf8)!)\n")
+        
         request.addValue(event.apiKey, forHTTPHeaderField: "api_key")
         request.addValue(event.coreInfo.userId, forHTTPHeaderField: "user_id")
         request.addValue("\(event.coreInfo.launchCount)", forHTTPHeaderField: "launch_counter")

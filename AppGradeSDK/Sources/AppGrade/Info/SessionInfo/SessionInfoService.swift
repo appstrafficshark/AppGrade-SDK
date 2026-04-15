@@ -4,6 +4,7 @@ import Foundation
 // MARK: - SessionInfoServiceProtocol
 protocol SessionInfoServiceProtocol {
     func collect(data: SDKStorageData) async -> SessionInfoModel
+    func startSession()
     func endSession() -> TimeInterval
 }
 
@@ -30,7 +31,7 @@ final class SessionInfoService: SessionInfoServiceProtocol {
 // MARK: - Session
 extension SessionInfoService {
     
-    private func startSession() {
+    func startSession() {
         let now = Date().timeIntervalSince1970
         sessionStart = now
         var sessions: [TimeInterval] = StorageService.load(key: .sessionsKey, defaultValue: [])

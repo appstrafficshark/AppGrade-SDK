@@ -11,21 +11,25 @@ public class AppGrade {
     
     private init() {}
     
-    public func initialize(apiKey: String, enableLogs: Bool = false) {
+    // MARK: - Initialization
+    public func configure(apiKey: String, enableLogs: Bool = false) {
         let config = SDKConfiguration(apiKey: apiKey, enableLogs: enableLogs)
         self.configuration = config
         self.core = AppGradeCore(configuration: config)
         core?.start()
     }
     
+    // MARK: - Attribution
     public func updateAttributionInfo() {
         core?.updateAttributionInfo()
     }
     
+    // MARK: - Subscriptions
     public func sendSubscriptionInfo(info: AppGradeSubscriptionInfo) {
         core?.sendSubscriptionInfo(info: info)
     }
     
+    // MARK: - In-App Purchases
     public func sendNonRenewingPurchaseInfo(info: AppGradeNonRenewingPurchaseInfo) {
         core?.sendNonRenewingPurchaseInfo(info: info)
     }

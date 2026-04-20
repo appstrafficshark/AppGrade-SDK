@@ -22,9 +22,12 @@ public class AppGrade {
         core?.updateAttributionInfo()
     }
     
-    // TODO: - ???
-    public func onConversionDataSuccess(_ data: [AnyHashable: Any]) {
-        let ctit = data["af_click_lookback"] // или ctit_sec
+    public func sendSubscriptionInfo(info: AppGradeSubscriptionInfo) {
+        core?.sendSubscriptionInfo(info: info)
+    }
+    
+    public func sendNonRenewingPurchaseInfo(info: AppGradeNonRenewingPurchaseInfo) {
+        core?.sendNonRenewingPurchaseInfo(info: info)
     }
     
 }

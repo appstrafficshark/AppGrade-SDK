@@ -40,10 +40,10 @@ final class EventDispatcher {
         guard let event = await queue.peek() else { return }
         do {
             try await network.send(event: event)
-            logService.log("✅ Sent event id=\(event.id); retry=\(event.retryCount)")
+            logService.log("✅ Sent event id=\(event.id); retry=\(event.retryCount)", debugLog: true)
             await queue.remove(id: event.id)
         } catch {
-            logService.log("❌ Failed id=\(event.id) retry=\(event.retryCount) error=\(error.localizedDescription)")
+            logService.log("❌ Failed id=\(event.id) retry=\(event.retryCount) error=\(error.localizedDescription)", debugLog: false)
             await handleFailure(event)
         }
     }

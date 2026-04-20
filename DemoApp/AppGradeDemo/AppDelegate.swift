@@ -1,10 +1,12 @@
 
 import UIKit
+import AppGradeSDK
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        AppGrade.shared.initialize(apiKey: "API_KEY", enableLogs: true)
         return true
     }
 

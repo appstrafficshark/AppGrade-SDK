@@ -3,7 +3,8 @@ import Foundation
 
 // MARK: - RequestServiceProtocol
 protocol RequestServiceProtocol {
-    func track<T: Codable>(updateInfo: Bool, model: T) async throws
+    func track<T: Codable>(id: String?, eventType: EventType, model: T) async throws
+    func updateSessionTime(event: AppStateType) 
 }
 
 // MARK: - RequestService
@@ -13,6 +14,10 @@ final class RequestService {
     private let sessionId: String
     private let coreInfo: SDKStorageData
     
+    private let sessionStart: TimeInterval
+    private var sessionInactiveStart: TimeInterval?
+    private var sessionInactiveTime: TimeInterval = 0
+    
     private let logService: LogServiceProtocol
     private let queue: EventQueue
     private let dispatcher: EventDispatcher
@@ -21,6 +26,7 @@ final class RequestService {
         self.apiKey = apiKey
         self.sessionId = sessionId
         self.coreInfo = coreInfo
+        self.sessionStart = Date().timeIntervalSince1970
         
         self.logService = logService
         let storage = EventStorage()
@@ -30,19 +36,31 @@ final class RequestService {
     }
   
 }
+
 // MARK: - RequestServiceProtocol
 extension RequestService: RequestServiceProtocol {
     
-    func track<T: Codable>(updateInfo: Bool = false, model: T) async throws {
+    func track<T: Codable>(id: String? = nil, eventType: EventType, model: T) async throws {
         do {
             let data = try JSONEncoder().encode(model)
-            let event = EventModel(id: UUID(), apiKey: apiKey, coreInfo: coreInfo, sessionId: sessionId, payload: data, createdAt: Date(), updateInfo: updateInfo, retryCount: 0)
+            let duration = Date().timeIntervalSince1970 - sessionStart - sessionInactiveTime
+            let event = EventModel(eventName: eventType.rawValue, id: id ?? UUID().uuidString, apiKey: apiKey, coreInfo: coreInfo, sessionId: sessionId, payload: data, createdAt: Date(), sessionTime: duration, retryCount: 0)
             await queue.enqueue(event)
             dispatcher.notifyNewEvent()
-            
         } catch {
-            logService.log("⛔️ Encoding error: \(error.localizedDescription)")
+            logService.log("⛔️ Encoding error: \(error.localizedDescription)", debugLog: false)
         }
     }
-        
+            
+    func updateSessionTime(event: AppStateType) {
+        switch event {
+        case .background:
+            self.sessionInactiveStart = Date().timeIntervalSince1970
+        case .active:
+            guard let sessionInactiveStart else { return }
+            let duration = Date().timeIntervalSince1970 - sessionInactiveStart
+            self.sessionInactiveTime += duration
+        }
+    }
+    
 }

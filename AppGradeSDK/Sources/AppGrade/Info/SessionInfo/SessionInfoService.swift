@@ -22,7 +22,6 @@ final class SessionInfoService: SessionInfoServiceProtocol {
         let total = sessions.count
         return .init(installTs: data.firstLaunchDate.timeIntervalSince1970,
                      firstOpenTs: data.firstLaunchDate.timeIntervalSince1970,
-                     sessionTimestamps: sessions,
                      totalSessionsCount: total)
     }
         

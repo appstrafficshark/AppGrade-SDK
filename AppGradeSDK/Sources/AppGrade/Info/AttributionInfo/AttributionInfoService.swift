@@ -20,7 +20,6 @@ final class AttributionInfoService: AttributionInfoServiceProtocol {
             idfa: getIDFA(),
             gaid: nil,
             idfv: UIDevice.current.identifierForVendor?.uuidString ?? "unknown",
-            skanConversionValue: getSKAN(),
             isOrganic: installSource == InstallSourceType.organic.installSource
         )
     }
@@ -77,11 +76,6 @@ private extension AttributionInfoService {
         case .authorized:
             return ASIdentifierManager.shared().advertisingIdentifier.uuidString ?? "unknown"
         }        
-    }
-    
-    // TODO: - ???
-    func getSKAN() -> String {
-        return "unknown"
     }
     
 }

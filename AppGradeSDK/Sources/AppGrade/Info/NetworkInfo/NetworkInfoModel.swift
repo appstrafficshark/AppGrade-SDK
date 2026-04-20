@@ -8,7 +8,7 @@ struct NetworkInfoModel: Codable {
     let carrierName: String
     let isVpnActive: Bool
     let isProxyConfigured: Bool
-    let connectionChangesCount: Int // ⚠️
+    let connectionChangesCount: Int 
     
     enum CodingKeys: String, CodingKey {
         case connectionType = "connection_type"

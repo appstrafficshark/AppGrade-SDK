@@ -20,7 +20,7 @@ actor EventQueue {
         events.first
     }
     
-    func remove(id: UUID) {
+    func remove(id: String) {
         events.removeAll { $0.id == id }
         persist()
     }

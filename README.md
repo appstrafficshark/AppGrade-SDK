@@ -68,9 +68,9 @@ AppGrade.shared.configure(
 ```swift
 import AppTrackingTransparency
 
-func requestTrackingAndUpdateAttribution() {
-    ATTrackingManager.requestTrackingAuthorization { status in
-        AppGrade.shared.updateAttribution()
-    }
+func requestTrackingAndUpdateAttribution() async {
+    guard ATTrackingManager.trackingAuthorizationStatus == .notDetermined else { return }
+    let _ = await ATTrackingManager.requestTrackingAuthorization()
+    AppGrade.shared.updateAttributionInfo()
 }
 ```

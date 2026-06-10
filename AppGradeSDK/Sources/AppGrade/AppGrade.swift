@@ -25,12 +25,14 @@ public class AppGrade {
     }
     
     // MARK: - Subscriptions
-    public func sendSubscriptionInfo(info: AppGradeSubscriptionInfo) {
+    public func sendSubscriptionInfo(canceledAt: Date?, expiresDate: Date, originalTransactionId: String?, productId: String, startedAt: Date, status: String, isAutorenewEnabled: Bool, isInRetryBilling: Bool, isIntroductoryActivated: Bool, isLocal: Bool, isSandbox: Bool) {
+        let info = AppGradeSubscriptionInfo.init(canceledAt: canceledAt, expiresDate: expiresDate, originalTransactionId: originalTransactionId, productId: productId, startedAt: startedAt, status: status, isAutorenewEnabled: isAutorenewEnabled, isInRetryBilling: isInRetryBilling, isIntroductoryActivated: isIntroductoryActivated, isLocal: isLocal, isSandbox: isSandbox)
         core?.sendSubscriptionInfo(info: info)
     }
     
     // MARK: - In-App Purchases
-    public func sendNonRenewingPurchaseInfo(info: AppGradeNonRenewingPurchaseInfo) {
+    public func sendNonRenewingPurchaseInfo(productId: String, canceledAt: Date?, purchasedAt: Date, transactionId: String?, isLocal: Bool, isSandbox: Bool) {
+        let info = AppGradeNonRenewingPurchaseInfo(productId: productId, canceledAt: canceledAt, purchasedAt: purchasedAt, transactionId: transactionId, isLocal: isLocal, isSandbox: isSandbox)
         core?.sendNonRenewingPurchaseInfo(info: info)
     }
     

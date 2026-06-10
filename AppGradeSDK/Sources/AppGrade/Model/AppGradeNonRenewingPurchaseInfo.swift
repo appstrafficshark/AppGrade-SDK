@@ -19,4 +19,13 @@ public struct AppGradeNonRenewingPurchaseInfo: Codable {
         case isSandbox = "is_sandbox"
     }
     
+    init(productId: String, canceledAt: Date?, purchasedAt: Date, transactionId: String?, isLocal: Bool, isSandbox: Bool) {
+        self.productId = productId
+        self.canceledAt = canceledAt
+        self.purchasedAt = purchasedAt
+        self.transactionId = transactionId
+        self.isLocal = isLocal
+        self.isSandbox = isSandbox
+    }
+    
 }

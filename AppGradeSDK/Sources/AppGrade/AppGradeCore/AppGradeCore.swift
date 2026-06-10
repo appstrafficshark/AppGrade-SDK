@@ -28,7 +28,7 @@ final class AppGradeCore {
     init(configuration: SDKConfiguration) {
         self.config = configuration
         self.storageService = StorageService()
-        self.sessionId = UUID().uuidString + "_\(storageService.coreInfo.userId)"
+        self.sessionId = UUID().uuidString
         self.logService = LogService(enableLogs: configuration.enableLogs)
 
         self.requestService = RequestService(apiKey: configuration.apiKey, sessionId: self.sessionId, coreInfo: self.storageService.coreInfo, logService: self.logService)

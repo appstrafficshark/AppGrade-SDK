@@ -2,6 +2,7 @@
 import Foundation
 import Network
 import CoreTelephony
+import UIKit
 
 // MARK: - NetworkInfoServiceProtocol
 protocol NetworkInfoServiceProtocol {
@@ -60,11 +61,17 @@ private extension NetworkInfoService {
     }
     
     func getCellularTechnology() -> String {
+        guard UIDevice.current.userInterfaceIdiom == .phone else {
+            return "unsupported"
+        }
         let networkInfo = CTTelephonyNetworkInfo()
         return networkInfo.serviceCurrentRadioAccessTechnology?.values.first ?? "unknown"
     }
     
     func getCarrierName() -> String {
+        guard UIDevice.current.userInterfaceIdiom == .phone else {
+            return "unsupported"
+        }
         let networkInfo = CTTelephonyNetworkInfo()
         return networkInfo.serviceSubscriberCellularProviders?.values.first?.carrierName ?? "unknown"
     }

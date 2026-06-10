@@ -16,7 +16,7 @@ final class NetworkService {
         request.addValue(event.eventName, forHTTPHeaderField: "event_name")
         request.addValue("\(event.coreInfo.launchCount)", forHTTPHeaderField: "launch_counter")
         request.addValue(event.sessionId, forHTTPHeaderField: "session_id")
-        request.addValue("\(event.createdAt.timeIntervalSince1970)", forHTTPHeaderField: "event_time")
+        request.addValue("\(event.createdAt.timeIntervalSince1970)", forHTTPHeaderField: "created_at")
         request.addValue(event.id, forHTTPHeaderField: "event_id")
         request.addValue("\(event.sessionTime)", forHTTPHeaderField: "session_time") 
         

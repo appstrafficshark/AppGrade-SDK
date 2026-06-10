@@ -29,4 +29,18 @@ public struct AppGradeSubscriptionInfo: Codable {
         case isSandbox = "is_sandbox"
     }
     
+    init(canceledAt: Date?, expiresDate: Date, originalTransactionId: String?, productId: String, startedAt: Date, status: String, isAutorenewEnabled: Bool, isInRetryBilling: Bool, isIntroductoryActivated: Bool, isLocal: Bool, isSandbox: Bool) {
+        self.canceledAt = canceledAt
+        self.expiresDate = expiresDate
+        self.originalTransactionId = originalTransactionId
+        self.productId = productId
+        self.startedAt = startedAt
+        self.status = status
+        self.isAutorenewEnabled = isAutorenewEnabled
+        self.isInRetryBilling = isInRetryBilling
+        self.isIntroductoryActivated = isIntroductoryActivated
+        self.isLocal = isLocal
+        self.isSandbox = isSandbox
+    }
+    
 }

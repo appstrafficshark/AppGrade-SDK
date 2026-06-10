@@ -11,34 +11,50 @@ protocol NetworkInfoServiceProtocol {
 
 // MARK: - NetworkInfoService
 final class NetworkInfoService: NetworkInfoServiceProtocol {
-    
+
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "ConnectionMonitor")
-    
-    private(set) var connectionChangesCount = 0
-    private var currentPath: NWPath?
-    
+
+    /// All access to the two fields below is serialized on `queue`.
+    private var _connectionChangesCount = 0
+    private var _currentPath: NWPath?
+    private var hasPath = false
+    private var pathWaiters: [CheckedContinuation<Void, Never>] = []
+
+    /// Safety cap so `collect()` never blocks forever if the monitor stays silent.
+    private let firstPathTimeout: TimeInterval = 2.0
+
     init() {
         startMonitoring()
     }
 
+    deinit {
+        monitor.cancel()
+    }
+
     func collect() async -> NetworkInfoModel {
+        // Wait until NWPathMonitor delivers the first path, otherwise the
+        // connection fields come back "unknown"/0 on cold start.
+        await waitForFirstPath()
+
+        let (path, changes) = queue.sync { (_currentPath, _connectionChangesCount) }
+
         return NetworkInfoModel(
-            connectionType: getConnectionType(),
+            connectionType: connectionType(for: path),
             cellularTechnology: getCellularTechnology(),
             carrierName: getCarrierName(),
             isVpnActive: isVpnActive(),
             isProxyConfigured: isProxyEnabled(),
-            connectionChangesCount: connectionChangesCount)
+            connectionChangesCount: changes)
     }
-    
+
 }
 
 // MARK: - Private Function
 private extension NetworkInfoService {
-    
-    func getConnectionType() -> String {
-        guard let path = currentPath else { return "unknown" }
+
+    func connectionType(for path: NWPath?) -> String {
+        guard let path else { return "unknown" }
         if path.usesInterfaceType(.wifi) {
             return "wifi"
         } else if path.usesInterfaceType(.cellular) {
@@ -49,7 +65,7 @@ private extension NetworkInfoService {
             return "unknown"
         }
     }
-    
+
     func isVpnActive() -> Bool {
         guard let settings = CFNetworkCopySystemProxySettings()?.takeRetainedValue() as? [String: Any],
               let scoped = settings["__SCOPED__"] as? [String: Any] else {
@@ -59,7 +75,7 @@ private extension NetworkInfoService {
             key.contains("tap") || key.contains("tun") || key.contains("ppp")
         }
     }
-    
+
     func getCellularTechnology() -> String {
         guard UIDevice.current.userInterfaceIdiom == .phone else {
             return "unsupported"
@@ -67,7 +83,7 @@ private extension NetworkInfoService {
         let networkInfo = CTTelephonyNetworkInfo()
         return networkInfo.serviceCurrentRadioAccessTechnology?.values.first ?? "unknown"
     }
-    
+
     func getCarrierName() -> String {
         guard UIDevice.current.userInterfaceIdiom == .phone else {
             return "unsupported"
@@ -75,32 +91,63 @@ private extension NetworkInfoService {
         let networkInfo = CTTelephonyNetworkInfo()
         return networkInfo.serviceSubscriberCellularProviders?.values.first?.carrierName ?? "unknown"
     }
-    
+
     func isProxyEnabled() -> Bool {
         guard let settings = CFNetworkCopySystemProxySettings()?.takeRetainedValue() as? [String: Any] else {
             return false
         }
-        
+
         let httpProxy = settings["HTTPEnable"] as? Int ?? 0
         let httpsProxy = settings["HTTPSEnable"] as? Int ?? 0
-        
+
         return httpProxy == 1 || httpsProxy == 1
     }
-    
+
 }
 
 // MARK: - Monitoring
 private extension NetworkInfoService {
-    
+
     func startMonitoring() {
         monitor.pathUpdateHandler = { [weak self] path in
             guard let self else { return }
-            if self.currentPath != nil {
-                self.connectionChangesCount += 1
+            // Already running on `queue`, so this is serialized with collect()'s reads.
+            if self._currentPath != nil {
+                self._connectionChangesCount += 1
             }
-            self.currentPath = path
+            self._currentPath = path
+
+            if !self.hasPath {
+                self.hasPath = true
+                self.resumeWaiters()
+            }
         }
         monitor.start(queue: queue)
     }
-    
+
+    /// Suspends until the first path is known (or the safety timeout fires).
+    func waitForFirstPath() async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            queue.async {
+                if self.hasPath {
+                    continuation.resume()
+                    return
+                }
+                self.pathWaiters.append(continuation)
+                self.queue.asyncAfter(deadline: .now() + self.firstPathTimeout) {
+                    // If the path never arrived, unblock the waiters anyway.
+                    self.resumeWaiters()
+                }
+            }
+        }
+    }
+
+    /// Must be called on `queue`. Resumes every pending waiter exactly once.
+    func resumeWaiters() {
+        guard !pathWaiters.isEmpty else { return }
+        let waiters = pathWaiters
+        pathWaiters.removeAll()
+        waiters.forEach { $0.resume() }
+    }
+
 }

@@ -43,8 +43,9 @@ extension RequestService: RequestServiceProtocol {
     func track<T: Codable>(id: String? = nil, eventType: EventType, model: T) async throws {
         do {
             let data = try JSONEncoder().encode(model)
+            logService.log("📦 \(eventType.rawValue) payload: \(String(data: data, encoding: .utf8) ?? "<non-utf8 \(data.count) bytes>")", debugLog: true)
             let duration = Date().timeIntervalSince1970 - sessionStart - sessionInactiveTime
-            let event = EventModel(eventName: eventType.rawValue, id: id ?? UUID().uuidString, apiKey: apiKey, coreInfo: coreInfo, sessionId: sessionId, payload: data, createdAt: Date(), sessionTime: duration, retryCount: 0)
+            let event = EventModel(eventName: eventType.rawValue, id: UUID().uuidString, eventId: id ?? UUID().uuidString, apiKey: apiKey, coreInfo: coreInfo, sessionId: sessionId, payload: data, createdAt: Date(), sessionTime: duration, retryCount: 0, nextAttemptAt: nil)
             await queue.enqueue(event)
             dispatcher.notifyNewEvent()
         } catch {

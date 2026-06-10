@@ -113,7 +113,7 @@ private extension AppGradeCore {
         
         // - Session Info
         let sessionInfo = await sessionService.collect(data: storageService.coreInfo)
-        logService.log("✅ Session Info collected: \(networkInfo)", debugLog: true)
+        logService.log("✅ Session Info collected: \(sessionInfo)", debugLog: true)
         
         // - Attribution Info
         let attributionInfo = await attributionService.collect()

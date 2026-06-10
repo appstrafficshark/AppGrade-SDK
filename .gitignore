@@ -103,3 +103,7 @@ xcuserdata/
 *.dSYM.zip
 *.dSYM
 Templates
+
+# Swift Package Manager
+.build/
+.swiftpm/xcode/package.xcworkspace/xcuserdata/

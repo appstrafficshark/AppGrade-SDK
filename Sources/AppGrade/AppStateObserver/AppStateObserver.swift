@@ -14,15 +14,14 @@ final class AppStateObserver {
     
     init() {
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(didBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
     }
-    
+
     @objc private func didEnterBackground() {
         onStateChanges?(.background)
     }
-    
-    @objc private func didBecomeActive() {
+
+    @objc private func willEnterForeground() {
         onStateChanges?(.active)
     }
     

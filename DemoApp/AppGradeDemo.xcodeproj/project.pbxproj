@@ -126,7 +126,7 @@
 			mainGroup = BEFB9C0E2F850CDF00E87FDD;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				BEFB9C5B2F8538C800E87FDD /* XCLocalSwiftPackageReference "../AppGradeSDK" */,
+				BEFB9C5B2F8538C800E87FDD /* XCLocalSwiftPackageReference ".." */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BEFB9C182F850CDF00E87FDD /* Products */;
@@ -397,9 +397,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		BEFB9C5B2F8538C800E87FDD /* XCLocalSwiftPackageReference "../AppGradeSDK" */ = {
+		BEFB9C5B2F8538C800E87FDD /* XCLocalSwiftPackageReference ".." */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../AppGradeSDK;
+			relativePath = ..;
 		};
 /* End XCLocalSwiftPackageReference section */
 

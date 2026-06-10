@@ -44,8 +44,29 @@ AppGrade.pro is built for developers who want:
 
 ### Swift Package Manager
 
-Add AppGrade.pro to your project:
-https://github.com/appstrafficshark/AppGrade-SDK
+**In Xcode:** File → Add Package Dependencies… and paste the repository URL:
+
+```
+https://github.com/appstrafficshark/AppGrade-SDK.git
+```
+
+Then add the `AppGradeSDK` product to your app target.
+
+**Or in `Package.swift`:**
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/appstrafficshark/AppGrade-SDK.git", from: "1.0.0")
+],
+targets: [
+    .target(
+        name: "YourApp",
+        dependencies: [
+            .product(name: "AppGradeSDK", package: "AppGrade-SDK")
+        ]
+    )
+]
+```
 
 
 ---

@@ -3,8 +3,6 @@ import Foundation
 
 final class NetworkService {
 
-    /// Error carrying the HTTP status so the dispatcher can decide whether a
-    /// failure is permanent (drop) or transient (keep & retry).
     enum SendError: Error {
         case http(status: Int)
     }
@@ -14,9 +12,7 @@ final class NetworkService {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.httpBody = event.payload
-        
-//        print(">>> \n\(String(data: event.payload, encoding: String.Encoding.utf8)!)\n")
-        
+                
         request.addValue(event.apiKey, forHTTPHeaderField: "api_key")
         request.addValue(event.coreInfo.userId, forHTTPHeaderField: "user_id")
         request.addValue(event.eventName, forHTTPHeaderField: "event_name")

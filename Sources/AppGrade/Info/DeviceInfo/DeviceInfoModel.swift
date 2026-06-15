@@ -73,7 +73,7 @@ struct DeviceInfo: Codable {
         case preferredContentSize = "preferred_content_size"
         case isLowPowerMode = "is_low_power_mode"
         case uiStyle = "ui_style"
-        case isJailbroken = "is_jailbroken"
+        case isJailbroken = "is_jail_broken"
     }
     
 }

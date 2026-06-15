@@ -15,7 +15,6 @@ final class NetworkInfoService: NetworkInfoServiceProtocol {
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "ConnectionMonitor")
 
-    /// All access to the two fields below is serialized on `queue`.
     private var _connectionChangesCount = 0
     private var _currentPath: NWPath?
     private var hasPath = false
@@ -33,8 +32,6 @@ final class NetworkInfoService: NetworkInfoServiceProtocol {
     }
 
     func collect() async -> NetworkInfoModel {
-        // Wait until NWPathMonitor delivers the first path, otherwise the
-        // connection fields come back "unknown"/0 on cold start.
         await waitForFirstPath()
 
         let (path, changes) = queue.sync { (_currentPath, _connectionChangesCount) }
@@ -111,7 +108,6 @@ private extension NetworkInfoService {
     func startMonitoring() {
         monitor.pathUpdateHandler = { [weak self] path in
             guard let self else { return }
-            // Already running on `queue`, so this is serialized with collect()'s reads.
             if self._currentPath != nil {
                 self._connectionChangesCount += 1
             }
@@ -125,7 +121,6 @@ private extension NetworkInfoService {
         monitor.start(queue: queue)
     }
 
-    /// Suspends until the first path is known (or the safety timeout fires).
     func waitForFirstPath() async {
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
             queue.async {
@@ -135,14 +130,12 @@ private extension NetworkInfoService {
                 }
                 self.pathWaiters.append(continuation)
                 self.queue.asyncAfter(deadline: .now() + self.firstPathTimeout) {
-                    // If the path never arrived, unblock the waiters anyway.
                     self.resumeWaiters()
                 }
             }
         }
     }
 
-    /// Must be called on `queue`. Resumes every pending waiter exactly once.
     func resumeWaiters() {
         guard !pathWaiters.isEmpty else { return }
         let waiters = pathWaiters

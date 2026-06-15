@@ -31,6 +31,7 @@ final class SessionInfoService: SessionInfoServiceProtocol {
 extension SessionInfoService {
     
     func startSession() {
+        guard sessionStart == nil else { return }
         let now = Date().timeIntervalSince1970
         sessionStart = now
         var sessions: [TimeInterval] = StorageService.load(key: .sessionsKey, defaultValue: [])

@@ -3,8 +3,9 @@ import Foundation
 
 // MARK: - RequestServiceProtocol
 protocol RequestServiceProtocol {
-    func track<T: Codable>(id: String?, eventType: EventType, model: T) async throws
-    func updateSessionTime(event: AppStateType) 
+    func track<T: Encodable>(id: String?, eventType: EventType, model: T) async throws
+    func updateSessionTime(event: AppStateType)
+    func currentSessionTime() -> TimeInterval
 }
 
 // MARK: - RequestService
@@ -40,11 +41,11 @@ final class RequestService {
 // MARK: - RequestServiceProtocol
 extension RequestService: RequestServiceProtocol {
     
-    func track<T: Codable>(id: String? = nil, eventType: EventType, model: T) async throws {
+    func track<T: Encodable>(id: String? = nil, eventType: EventType, model: T) async throws {
         do {
             let data = try JSONEncoder().encode(model)
             logService.log("📦 \(eventType.rawValue) payload: \(String(data: data, encoding: .utf8) ?? "<non-utf8 \(data.count) bytes>")", debugLog: true)
-            let duration = Date().timeIntervalSince1970 - sessionStart - sessionInactiveTime
+            let duration = currentSessionTime()
             let event = EventModel(eventName: eventType.rawValue, id: UUID().uuidString, eventId: id ?? UUID().uuidString, apiKey: apiKey, coreInfo: coreInfo, sessionId: sessionId, payload: data, createdAt: Date(), sessionTime: duration, retryCount: 0, nextAttemptAt: nil)
             await queue.enqueue(event)
             dispatcher.notifyNewEvent()
@@ -62,6 +63,10 @@ extension RequestService: RequestServiceProtocol {
             let duration = Date().timeIntervalSince1970 - sessionInactiveStart
             self.sessionInactiveTime += duration
         }
+    }
+
+    func currentSessionTime() -> TimeInterval {
+        return Date().timeIntervalSince1970 - sessionStart - sessionInactiveTime
     }
     
 }

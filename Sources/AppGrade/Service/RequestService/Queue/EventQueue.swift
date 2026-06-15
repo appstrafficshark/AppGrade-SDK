@@ -3,8 +3,6 @@ import Foundation
 
 actor EventQueue {
 
-    /// Safety cap. A device offline for a very long time shouldn't grow the
-    /// cache without bound; beyond this we drop the OLDEST events.
     private let maxEvents = 1000
 
     private var events: [EventModel]
